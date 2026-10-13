@@ -34,7 +34,7 @@ h2{font-size:15px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em
 .d1{color:var(--g);font-weight:600}.d0{color:var(--r);font-weight:600}
 .empty{color:var(--mut);padding:24px;text-align:center}
 footer{color:var(--mut);font-size:13px;margin-top:24px}
-</style></head><body><div class="wrap" id="lock" style="display:none"><header><h1>MEP Survey Progress</h1><div class="sub">Enter the password to continue.</div></header><div class="filters" style="grid-template-columns:1fr"><div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;font:inherit;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:48px"></div></div><div class="row2"><button class="reset" id="unlock" style="background:var(--g);color:#fff;border-color:var(--g);flex:1">Open dashboard</button></div><div id="lockmsg" class="sub" style="margin-top:10px;color:var(--r)"></div></div>
+</style></head><body><div class="wrap" id="lock" style="display:none"><header><h1>MEP Survey Progress</h1><div class="sub">Enter the password to continue.</div></header><div class="filters" style="grid-template-columns:1fr"><div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;font:inherit;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:48px"></div></div><div class="row2"><button class="reset" id="unlock" style="background:var(--g);color:#fff;border-color:var(--g);flex:1">Open dashboard</button></div><div id="lockmsg" class="sub" style="margin-top:10px;color:var(--r)"></div></div>
 <div class="wrap" id="app" style="display:none">
 <header><h1>MEP Survey Progress</h1><div class="sub" id="sub"></div></header>
 <div class="filters">
@@ -126,7 +126,7 @@ function show(D){document.getElementById('lock').style.display='none';document.g
 (function start(){
  if(typeof ENC==='undefined'){show(DATA);return}
  const lock=document.getElementById('lock');lock.style.display='';
- const go=async()=>{const pw=document.getElementById('pw').value;if(!pw)return;
+ const go=async()=>{const pw=document.getElementById('pw').value.trim();if(!pw)return;
   document.getElementById('lockmsg').textContent='';
   try{const D=await decrypt(pw);kv.set('mep_pw',pw);show(D)}
   catch(e){kv.del('mep_pw');document.getElementById('lockmsg').textContent=(window.crypto&&crypto.subtle)?'Wrong password. Try again.':'This page must be opened over https.'}};
