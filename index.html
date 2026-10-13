@@ -65,17 +65,26 @@ function readHash(){const p=new URLSearchParams(location.hash.slice(1));return{r
 function writeHash(){const p=new URLSearchParams();if($('#rem').value)p.set('rem',$('#rem').value);if($('#tech').value)p.set('tech',$('#tech').value);
  const h=p.toString();try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search)}catch(e){}
  store.set('mep_rem',$('#rem').value);store.set('mep_tech',$('#tech').value)}
-function agg(ss){return ss.reduce((a,s)=>(a.n++,a.t+=s.total,a.d+=s.done,a.nw+=s.new.length,a.f+=s.flag,a.c+=(s.total>0&&s.done>=s.total),a.ex+=s.extra,a),{n:0,t:0,d:0,nw:0,f:0,c:0,ex:0})}
+function agg(ss){return ss.reduce((a,s)=>(a.n++,a.t+=s.total,a.d+=s.done,a.nw+=s.new.length,a.f+=s.flag,a.c+=(s.total>0&&s.done>=s.total),a.ex+=s.extra,a.dp+=s.dup.length+s.dupNew.length,a.ds+=(s.dup.length+s.dupNew.length>0),a),{n:0,t:0,d:0,nw:0,f:0,c:0,ex:0,dp:0,ds:0})}
 function tiles(A,scope){const p=pc(A.d,A.t);return `<div class=tiles>
 <div class=tile><div class=l>Existing equipment surveyed</div><div class=v style="color:${col(p)}">${p}%</div><div class=s>${A.d} of ${A.t} records</div><div class=bar><i style="width:${p}%"></i></div></div>
 <div class=tile><div class=l>Sites complete</div><div class=v>${A.c}<span style="font-size:18px;color:var(--mut)"> / ${A.n}</span></div><div class=s>${pc(A.c,A.n)}% of ${scope}</div><div class=bar><i style="width:${pc(A.c,A.n)}%"></i></div></div>
 <div class=tile><div class=l>New assets added</div><div class=v>${A.nw}</div><div class=s>no equipment identifier yet</div></div>
-<div class=tile><div class=l>Flagged to deactivate</div><div class=v>${A.f}</div><div class=s>old assets marked by techs</div></div></div>`}
+<div class=tile><div class=l>Flagged to deactivate</div><div class=v>${A.f}</div><div class=s>old assets marked by techs</div></div>${A.dp?`<div class=tile style="border-color:var(--y)"><div class=l>Duplicates to clean up</div><div class=v style="color:var(--y)">${A.dp}</div><div class=s>at ${A.ds} site${A.ds>1?'s':''}${scope==='all sites'||scope==='sites for this REM'?'. Pick a technician to see them.':''}</div></div>`:''}</div>`}
+function dupHtml(s){
+ const nd=s.dup.length+s.dupNew.length;if(!nd)return '';
+ const full=s.dupAi.filter(a=>a[1]===a[2]),part=s.dupAi.filter(a=>a[1]!==a[2]);
+ const fullIds=new Set(full.map(a=>a[0]));
+ let h='<h3 style="color:var(--y)">Duplicates to clean up</h3><div class=sm style="margin:2px 0 6px">Delete the copy in ST5. Keep the one listed. This list clears after the next refresh.</div>';
+ h+=full.map(a=>`<div class=eq><span><b>Assessment ${a[0]}</b> <span class=sm>all ${a[2]} survey${a[2]>1?'s':''} repeat equipment surveyed elsewhere</span></span><span class=d0>Delete assessment</span></div>`).join('');
+ h+=s.dup.filter(d=>!fullIds.has(d[2])).map(d=>`<div class=eq><span>${esc(d[0])} <span class=sm>survey ${d[1]} in assessment ${d[2]}, ${esc(d[6])}</span></span><span class=d0>Delete<span class=sm style="font-weight:400"> keep ${d[3]}</span></span></div>`).join('');
+ h+=s.dupNew.map(d=>`<div class=eq><span>${esc(d[0])} <span class=sm>new asset added twice, record ${d[1]}</span></span><span class=d0>Delete<span class=sm style="font-weight:400"> keep ${d[2]}</span></span></div>`).join('');
+ return h}
 function siteHtml(s){const p=pc(s.done,s.total),st=s.total&&s.done>=s.total?['ok','Complete']:s.done?['mid','In progress']:s.total?['no','Not started']:['ok','New site'];
  const eq=s.eq.map(e=>`<div class=eq><span>${esc(e[0])} <span class=sm>${esc(e[1])}</span></span><span class="d${e[2]}">${e[2]?'Done':'Not surveyed'}<span class=sm style="font-weight:400">${e[3]?' · '+esc(e[3])+' '+esc(e[4]):''}${e[5]?' · deactivate':''}</span></span></div>`).join('');
  const nw=s.new.map(e=>`<div class=eq><span>${esc(e[0])} <span class=sm>${esc(e[1])}</span></span><span class=d1>Added<span class=sm style="font-weight:400"> · ${esc(e[2])} ${esc(e[3])}</span></span></div>`).join('');
- return `<div class=site><div class=sh><div><div class=sn>${esc(s.name)}</div><div class=sm>${esc(s.id)} · ${esc(s.city)}, ${esc(s.state)} · ${esc(s.tech)}</div><div><span class="badge ${st[0]}">${st[1]}</span>${s.new.length?`<span class="badge ok">${s.new.length} new asset${s.new.length>1?'s':''}</span>`:''}${s.extra?`<span class="badge mid">${s.extra} survey${s.extra>1?'s':''} not matched</span>`:''}</div></div><div class=pct style="color:${s.total?col(p):'var(--mut)'}">${s.total?p+'%':'–'}<div class=sm>${s.done}/${s.total}</div></div>${s.total?`<div class=bar><i style="width:${p}%"></i></div>`:''}</div>
- <div class=eqs>${s.new.length?'<h3>New assets</h3>'+nw:''}${s.eq.length?'<h3>Existing equipment</h3>'+eq:''}${s.extra?`<h3>Note</h3><div class=sm>${s.extra} completed survey${s.extra>1?'s have':' has'} no matching equipment record at this site. The equipment name may differ from the record.</div>`:''}</div></div>`}
+ return `<div class=site><div class=sh><div><div class=sn>${esc(s.name)}</div><div class=sm>${esc(s.id)} · ${esc(s.city)}, ${esc(s.state)} · ${esc(s.tech)}</div><div><span class="badge ${st[0]}">${st[1]}</span>${s.new.length?`<span class="badge ok">${s.new.length} new asset${s.new.length>1?'s':''}</span>`:''}${s.dup.length+s.dupNew.length?`<span class="badge mid">${s.dup.length+s.dupNew.length} duplicate${s.dup.length+s.dupNew.length>1?'s':''}</span>`:''}${s.extra?`<span class="badge mid">${s.extra} survey${s.extra>1?'s':''} not matched</span>`:''}</div></div><div class=pct style="color:${s.total?col(p):'var(--mut)'}">${s.total?p+'%':'–'}<div class=sm>${s.done}/${s.total}</div></div>${s.total?`<div class=bar><i style="width:${p}%"></i></div>`:''}</div>
+ <div class=eqs>${dupHtml(s)}${s.new.length?'<h3>New assets</h3>'+nw:''}${s.eq.length?'<h3>Existing equipment</h3>'+eq:''}${s.extra?`<h3>Note</h3><div class=sm>${s.extra} completed survey${s.extra>1?'s have':' has'} no matching equipment record at this site. The equipment name may differ from the record.</div>`:''}</div></div>`}
 function render(){
  const r=$('#rem').value,t=$('#tech').value,q=$('#q').value.trim().toLowerCase(),o=$('#out');
  let ss=S.filter(s=>(!r||s.rem===r)&&(!t||s.tech===t));
@@ -88,8 +97,8 @@ function render(){
    h+=`<h2>By REM</h2><table><tr><th>REM</th><th class=n>Sites</th><th class=n>Equipment</th><th class=n>Done</th></tr>`+rr.map(x=>`<tr class=t data-rem="${esc(x.x)}"><td>${esc(x.x)}</td><td class=n>${x.c}/${x.n}</td><td class=n>${x.d}/${x.t}</td><td class=n style="color:${col(pc(x.d,x.t))};font-weight:700">${pc(x.d,x.t)}%</td></tr>`).join('')+'</table>'}
   h+=`<h2>By technician</h2><table><tr><th>Technician</th><th class=n>Sites</th><th class=n>Equipment</th><th class=n>Done</th></tr>`+rows.map(x=>`<tr class=t data-tech="${esc(x.x)}"><td>${esc(x.x)}</td><td class=n>${x.c}/${x.n}</td><td class=n>${x.d}/${x.t}</td><td class=n style="color:${col(pc(x.d,x.t))};font-weight:700">${pc(x.d,x.t)}%</td></tr>`).join('')+'</table>'
  }else{
-  const f=ss.filter(s=>filt==='all'||(filt==='todo'&&!(s.total&&s.done>=s.total))||(filt==='done'&&s.total&&s.done>=s.total)).sort((a,b)=>pc(a.done,a.total)-pc(b.done,b.total)||a.name.localeCompare(b.name));
-  h+=`<div class=chips>`+[['all','All sites'],['todo','Still to do'],['done','Complete']].map(c=>`<button class="chip ${filt===c[0]?'on':''}" data-f=${c[0]}>${c[1]}</button>`).join('')+`</div>`+(f.length?f.map(siteHtml).join(''):'<div class=empty>No sites match.</div>')}
+  const f=ss.filter(s=>filt==='all'||(filt==='todo'&&!(s.total&&s.done>=s.total))||(filt==='done'&&s.total&&s.done>=s.total)||(filt==='dup'&&s.dup.length+s.dupNew.length>0)).sort((a,b)=>pc(a.done,a.total)-pc(b.done,b.total)||a.name.localeCompare(b.name));
+  h+=`<div class=chips>`+[['all','All sites'],['todo','Still to do'],['done','Complete']].concat(A.dp?[['dup','Duplicates ('+A.ds+')']]:[]).map(c=>`<button class="chip ${filt===c[0]?'on':''}" data-f=${c[0]}>${c[1]}</button>`).join('')+`</div>`+(f.length?f.map(siteHtml).join(''):'<div class=empty>No sites match.</div>')}
  o.innerHTML=h;
  o.querySelectorAll('tr[data-rem]').forEach(e=>e.onclick=()=>{$('#rem').value=e.dataset.rem;fillTechs();writeHash();render();scrollTo(0,0)});
  o.querySelectorAll('tr[data-tech]').forEach(e=>e.onclick=()=>{const sT=S.find(s=>s.tech===e.dataset.tech);if(!$('#rem').value&&sT){$('#rem').value=sT.rem;fillTechs()}$('#tech').value=e.dataset.tech;writeHash();render();scrollTo(0,0)});
