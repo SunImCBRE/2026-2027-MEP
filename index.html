@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MEP Survey Progress</title>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#17262b;--mut:#5d6d70;--line:#dfe5e3;--g:#00693c;--gl:#e3f1ea;--y:#c98a00;--r:#c0392b;--b:#e6ebea;--rl:#fde8e5}
+@media(prefers-color-scheme:dark){:root{--bg:#101a1c;--card:#182427;--ink:#e8efee;--mut:#9bb0b1;--line:#2a3a3d;--g:#3cc48a;--gl:#1d3a30;--y:#f0b429;--r:#ff6b5b;--b:#243336;--rl:#3d2220}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 48px}
+.wrap{max-width:1000px;margin:0 auto}
+header{padding:18px 0 4px}h1{font-size:24px;margin:0}.sub{color:var(--mut);font-size:14px;margin-top:2px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 6px}
+@media(max-width:560px){.filters{grid-template-columns:1fr}}
+label{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px 2px}
+select,input[type=search]{width:100%;font:inherit;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:48px}
+.row2{display:flex;gap:10px;align-items:end;margin:6px 0}.row2>div{flex:1}
+button.reset{font:inherit;padding:0 16px;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:14px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.tile .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em}.tile .v{font-size:32px;font-weight:700;margin:2px 0}.tile .s{color:var(--mut);font-size:14px}
+.bar{height:12px;background:var(--b);border-radius:6px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--g)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;border-radius:999px;font:inherit;font-size:15px;min-height:44px}.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:6px 0}
+th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:15px}th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}td.n,th.n{text-align:right}tr.t{cursor:pointer}tr.t:active{background:var(--gl)}
+h2{font-size:15px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 6px}
+.site{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
+.sh{padding:14px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;cursor:pointer;min-height:56px}
+.sn{font-weight:600}.sm{color:var(--mut);font-size:14px}.pct{font-weight:700;font-size:20px;text-align:right}.sh .bar{grid-column:1/-1}
+.badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;margin:6px 6px 0 0}
+.ok{background:var(--gl);color:var(--g)}.no{background:var(--rl);color:var(--r)}.mid{background:var(--b);color:var(--y)}
+.eqs{display:none;border-top:1px solid var(--line);padding:6px 14px 12px}.site.open .eqs{display:block}
+.eqs h3{font-size:13px;margin:12px 0 2px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.eq{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}.eq:last-child{border:0}
+.d1{color:var(--g);font-weight:600}.d0{color:var(--r);font-weight:600}
+.empty{color:var(--mut);padding:24px;text-align:center}
+footer{color:var(--mut);font-size:13px;margin-top:24px}
+</style></head><body><div class="wrap" id="lock" style="display:none"><header><h1>MEP Survey Progress</h1><div class="sub">Enter the password to continue.</div></header><div class="filters" style="grid-template-columns:1fr"><div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;font:inherit;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:48px"></div></div><div class="row2"><button class="reset" id="unlock" style="background:var(--g);color:#fff;border-color:var(--g);flex:1">Open dashboard</button></div><div id="lockmsg" class="sub" style="margin-top:10px;color:var(--r)"></div></div>
+<div class="wrap" id="app" style="display:none">
+<header><h1>MEP Survey Progress</h1><div class="sub" id="sub"></div></header>
+<div class="filters">
+ <div><label for="rem">REM</label><select id="rem"></select></div>
+ <div><label for="tech">Technician</label><select id="tech"></select></div>
+</div>
+<div class="row2"><div><label for="q">Search sites</label><input id="q" type="search" placeholder="Site name, city, or Property ID"></div><button class="reset" id="reset">Reset</button></div>
+<div id="out"></div>
+<footer id="foot"></footer>
+</div>
+<script src="data.js"></script>
+<script>
+function boot(DATA){
+const $=s=>document.querySelector(s),pc=(a,b)=>b?Math.round(100*a/b):0;
+const col=p=>p>=90?'var(--g)':p>=50?'var(--y)':'var(--r)';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S=DATA.sites;
+$('#sub').textContent='Survey period '+DATA.range+' · Data through '+DATA.through;
+let filt='all';
+const store={get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const rems=[...new Set(S.map(s=>s.rem))].sort();
+function fillTechs(){const r=$('#rem').value,cur=$('#tech').value;
+ const t=[...new Set(S.filter(s=>!r||s.rem===r).map(s=>s.tech))].sort();
+ $('#tech').innerHTML='<option value="">All technicians</option>'+t.map(x=>`<option>${esc(x)}</option>`).join('');
+ $('#tech').value=t.includes(cur)?cur:''}
+$('#rem').innerHTML='<option value="">All REMs</option>'+rems.map(x=>`<option>${esc(x)}</option>`).join('');
+function readHash(){const p=new URLSearchParams(location.hash.slice(1));return{rem:p.get('rem')||'',tech:p.get('tech')||''}}
+function writeHash(){const p=new URLSearchParams();if($('#rem').value)p.set('rem',$('#rem').value);if($('#tech').value)p.set('tech',$('#tech').value);
+ const h=p.toString();try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search)}catch(e){}
+ store.set('mep_rem',$('#rem').value);store.set('mep_tech',$('#tech').value)}
+function agg(ss){return ss.reduce((a,s)=>(a.n++,a.t+=s.total,a.d+=s.done,a.nw+=s.new.length,a.f+=s.flag,a.c+=(s.total>0&&s.done>=s.total),a.ex+=s.extra,a),{n:0,t:0,d:0,nw:0,f:0,c:0,ex:0})}
+function tiles(A,scope){const p=pc(A.d,A.t);return `<div class=tiles>
+<div class=tile><div class=l>Existing equipment surveyed</div><div class=v style="color:${col(p)}">${p}%</div><div class=s>${A.d} of ${A.t} records</div><div class=bar><i style="width:${p}%"></i></div></div>
+<div class=tile><div class=l>Sites complete</div><div class=v>${A.c}<span style="font-size:18px;color:var(--mut)"> / ${A.n}</span></div><div class=s>${pc(A.c,A.n)}% of ${scope}</div><div class=bar><i style="width:${pc(A.c,A.n)}%"></i></div></div>
+<div class=tile><div class=l>New assets added</div><div class=v>${A.nw}</div><div class=s>no equipment identifier yet</div></div>
+<div class=tile><div class=l>Flagged to deactivate</div><div class=v>${A.f}</div><div class=s>old assets marked by techs</div></div></div>`}
+function siteHtml(s){const p=pc(s.done,s.total),st=s.total&&s.done>=s.total?['ok','Complete']:s.done?['mid','In progress']:s.total?['no','Not started']:['ok','New site'];
+ const eq=s.eq.map(e=>`<div class=eq><span>${esc(e[0])} <span class=sm>${esc(e[1])}</span></span><span class="d${e[2]}">${e[2]?'Done':'Not surveyed'}<span class=sm style="font-weight:400">${e[3]?' · '+esc(e[3])+' '+esc(e[4]):''}${e[5]?' · deactivate':''}</span></span></div>`).join('');
+ const nw=s.new.map(e=>`<div class=eq><span>${esc(e[0])} <span class=sm>${esc(e[1])}</span></span><span class=d1>Added<span class=sm style="font-weight:400"> · ${esc(e[2])} ${esc(e[3])}</span></span></div>`).join('');
+ return `<div class=site><div class=sh><div><div class=sn>${esc(s.name)}</div><div class=sm>${esc(s.id)} · ${esc(s.city)}, ${esc(s.state)} · ${esc(s.tech)}</div><div><span class="badge ${st[0]}">${st[1]}</span>${s.new.length?`<span class="badge ok">${s.new.length} new asset${s.new.length>1?'s':''}</span>`:''}${s.extra?`<span class="badge mid">${s.extra} survey${s.extra>1?'s':''} not matched</span>`:''}</div></div><div class=pct style="color:${s.total?col(p):'var(--mut)'}">${s.total?p+'%':'–'}<div class=sm>${s.done}/${s.total}</div></div>${s.total?`<div class=bar><i style="width:${p}%"></i></div>`:''}</div>
+ <div class=eqs>${s.new.length?'<h3>New assets</h3>'+nw:''}${s.eq.length?'<h3>Existing equipment</h3>'+eq:''}${s.extra?`<h3>Note</h3><div class=sm>${s.extra} completed survey${s.extra>1?'s have':' has'} no matching equipment record at this site. The equipment name may differ from the record.</div>`:''}</div></div>`}
+function render(){
+ const r=$('#rem').value,t=$('#tech').value,q=$('#q').value.trim().toLowerCase(),o=$('#out');
+ let ss=S.filter(s=>(!r||s.rem===r)&&(!t||s.tech===t));
+ if(q)ss=ss.filter(s=>(s.name+' '+s.id+' '+s.city).toLowerCase().includes(q));
+ const A=agg(ss),scope=t?'your sites':r?'sites for this REM':'all sites';
+ let h=tiles(A,scope);
+ if(!t&&!q){
+  const rows=[...new Set(ss.map(s=>s.tech))].map(x=>({x,...agg(ss.filter(s=>s.tech===x))})).sort((a,b)=>pc(a.d,a.t)-pc(b.d,b.t)||a.x.localeCompare(b.x));
+  if(!r){const rr=rems.map(x=>({x,...agg(S.filter(s=>s.rem===x))})).sort((a,b)=>pc(a.d,a.t)-pc(b.d,b.t));
+   h+=`<h2>By REM</h2><table><tr><th>REM</th><th class=n>Sites</th><th class=n>Equipment</th><th class=n>Done</th></tr>`+rr.map(x=>`<tr class=t data-rem="${esc(x.x)}"><td>${esc(x.x)}</td><td class=n>${x.c}/${x.n}</td><td class=n>${x.d}/${x.t}</td><td class=n style="color:${col(pc(x.d,x.t))};font-weight:700">${pc(x.d,x.t)}%</td></tr>`).join('')+'</table>'}
+  h+=`<h2>By technician</h2><table><tr><th>Technician</th><th class=n>Sites</th><th class=n>Equipment</th><th class=n>Done</th></tr>`+rows.map(x=>`<tr class=t data-tech="${esc(x.x)}"><td>${esc(x.x)}</td><td class=n>${x.c}/${x.n}</td><td class=n>${x.d}/${x.t}</td><td class=n style="color:${col(pc(x.d,x.t))};font-weight:700">${pc(x.d,x.t)}%</td></tr>`).join('')+'</table>'
+ }else{
+  const f=ss.filter(s=>filt==='all'||(filt==='todo'&&!(s.total&&s.done>=s.total))||(filt==='done'&&s.total&&s.done>=s.total)).sort((a,b)=>pc(a.done,a.total)-pc(b.done,b.total)||a.name.localeCompare(b.name));
+  h+=`<div class=chips>`+[['all','All sites'],['todo','Still to do'],['done','Complete']].map(c=>`<button class="chip ${filt===c[0]?'on':''}" data-f=${c[0]}>${c[1]}</button>`).join('')+`</div>`+(f.length?f.map(siteHtml).join(''):'<div class=empty>No sites match.</div>')}
+ o.innerHTML=h;
+ o.querySelectorAll('tr[data-rem]').forEach(e=>e.onclick=()=>{$('#rem').value=e.dataset.rem;fillTechs();writeHash();render();scrollTo(0,0)});
+ o.querySelectorAll('tr[data-tech]').forEach(e=>e.onclick=()=>{const sT=S.find(s=>s.tech===e.dataset.tech);if(!$('#rem').value&&sT){$('#rem').value=sT.rem;fillTechs()}$('#tech').value=e.dataset.tech;writeHash();render();scrollTo(0,0)});
+ o.querySelectorAll('.chip').forEach(e=>e.onclick=()=>{filt=e.dataset.f;render()});
+ o.querySelectorAll('.sh').forEach(e=>e.onclick=()=>e.parentElement.classList.toggle('open'));
+ const un=DATA.unlinkedNew.length;
+ $('#foot').textContent=(!r&&!t&&un?un+' new asset'+(un>1?'s are':' is')+' not linked to a site yet and not counted above. ':'')+'Progress counts completed 2026-27 MEP equipment surveys matched to existing equipment records by site and equipment name.'}
+$('#rem').onchange=()=>{fillTechs();filt='all';writeHash();render()};
+$('#tech').onchange=()=>{filt='all';writeHash();render()};
+$('#q').oninput=render;
+$('#reset').onclick=()=>{$('#rem').value='';fillTechs();$('#tech').value='';$('#q').value='';filt='all';writeHash();render()};
+(function init(){let h=readHash();const r=h.rem||store.get('mep_rem'),t=h.tech||store.get('mep_tech');
+ if(r&&rems.includes(r))$('#rem').value=r;fillTechs();
+ if(t&&[...$('#tech').options].some(o=>o.value===t))$('#tech').value=t;render()})();
+
+}
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const kv={get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+async function decrypt(pw){
+ const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+ const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(ENC.salt),iterations:ENC.iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+ const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(ENC.iv)},key,b64(ENC.ct));
+ return JSON.parse(new TextDecoder().decode(pt))}
+function show(D){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='';boot(D)}
+(function start(){
+ if(typeof ENC==='undefined'){show(DATA);return}
+ const lock=document.getElementById('lock');lock.style.display='';
+ const go=async()=>{const pw=document.getElementById('pw').value;if(!pw)return;
+  document.getElementById('lockmsg').textContent='';
+  try{const D=await decrypt(pw);kv.set('mep_pw',pw);show(D)}
+  catch(e){kv.del('mep_pw');document.getElementById('lockmsg').textContent=(window.crypto&&crypto.subtle)?'Wrong password. Try again.':'This page must be opened over https.'}};
+ document.getElementById('unlock').onclick=go;
+ document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+ const saved=kv.get('mep_pw');if(saved){document.getElementById('pw').value=saved;go()}
+})();
+</script></body></html>
