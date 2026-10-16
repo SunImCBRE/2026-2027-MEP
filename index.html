@@ -52,7 +52,8 @@ const $=s=>document.querySelector(s),pc=(a,b)=>b?Math.round(100*a/b):0;
 const col=p=>p>=90?'var(--g)':p>=50?'var(--y)':'var(--r)';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const S=DATA.sites;
-$('#sub').textContent='Survey period '+DATA.range+' · Data through '+DATA.through;
+var _r=DATA.generated;try{if(DATA.generatedUtc){_r=new Date(DATA.generatedUtc).toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})}}catch(e){}
+$('#sub').textContent='Survey period '+DATA.range+' · Data through '+DATA.through+' · Last refreshed '+_r;
 let filt='all';
 const store={get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const rems=[...new Set(S.map(s=>s.rem))].sort();
